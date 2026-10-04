@@ -139,7 +139,8 @@ def parse(expr):
 
 
 class VectorTest(unittest.TestCase):
-    def test_valid_vectors_round_trip(self):
+    # TEST0001: valid vectors round trip
+    def test_0001_valid_vectors_round_trip(self):
         checked = 0
         for v in VECTORS["valid"]:
             if v["type"][:2] in ("19", "1c"):
@@ -156,7 +157,8 @@ class VectorTest(unittest.TestCase):
                 checked += 1
         self.assertGreater(checked, 40)
 
-    def test_invalid_vectors_are_rejected(self):
+    # TEST0002: invalid vectors are rejected
+    def test_0002_invalid_vectors_are_rejected(self):
         for v in VECTORS["invalid"]:
             with self.subTest(v["name"]):
                 d = parse(v["type"])
@@ -165,7 +167,8 @@ class VectorTest(unittest.TestCase):
                     d.decode(r)
                     r.finish()
 
-    def test_python_values_lean_cannot_represent_are_rejected(self):
+    # TEST0003: python values lean cannot represent are rejected
+    def test_0003_python_values_lean_cannot_represent_are_rejected(self):
         w = Writer(None)
         for t, v in [
             (L.NAT, -1),
@@ -183,7 +186,8 @@ class VectorTest(unittest.TestCase):
                 with self.assertRaises(L.MalformedError):
                     t.encode(w, v)
 
-    def test_nan_payloads_survive(self):
+    # TEST0004: nan payloads survive
+    def test_0004_nan_payloads_survive(self):
         w = Writer(None)
         L.FLOAT.encode(w, math.nan)
         self.assertTrue(math.isnan(L.FLOAT.decode(Reader(None, bytes(w.buf)))))
