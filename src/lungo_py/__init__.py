@@ -11,7 +11,7 @@ import os
 
 from . import _runtime
 from ._assurance import Assurance
-from ._errors import HostError, LeanError, LeanIOError, MalformedError, MissingCapabilityError
+from ._errors import HostError, LeanError, LeanIOError, MalformedError, MissingFacilityError
 from ._program import Program, async_, eio, io, outstanding, value
 from ._types import (
     BOOL,
@@ -68,7 +68,7 @@ def cmake_dir() -> str:
 __all__ = [
     "ABI_VERSION",
     "Assurance",
-    "MissingCapabilityError",
+    "MissingFacilityError",
     "async_",
     "outstanding",
     "BOOL",

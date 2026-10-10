@@ -69,7 +69,7 @@ class Operation:
 
 
 @dataclass(frozen=True)
-class Capability:
+class Facility:
     name: str
     id: str
     form: str
@@ -84,7 +84,7 @@ class Capability:
 @dataclass(frozen=True)
 class Assumption:
     name: str
-    capability: str
+    facility: str
     statement: str
     package: _t.Optional[str]
     fingerprint: str
@@ -139,7 +139,7 @@ class Export:
     trust: Trust
     claims: _t.Tuple[str, ...]
     assumptions: _t.Tuple[str, ...]
-    capabilities: _t.Tuple[str, ...]
+    facilities: _t.Tuple[str, ...]
     roles: _t.Tuple[str, ...]
     source: _t.Optional[Source]
 
@@ -171,9 +171,9 @@ Library._read = staticmethod(_reader(Library, {}))
 _src = {"source": lambda v, w: _opt(Source, v, w)}
 Specification._read = staticmethod(_reader(Specification, _src))
 Operation._read = staticmethod(_reader(Operation, {}))
-Capability._read = staticmethod(
+Facility._read = staticmethod(
     _reader(
-        Capability,
+        Facility,
         {
             **_src,
             "operations": lambda v, w: tuple(Operation._read(x, f"{w}[{i}]") for i, x in enumerate(v)),
@@ -211,7 +211,7 @@ def _read_export(data, where):
             "trust": lambda v, w: Trust._read(v, w),
             "claims": _strs,
             "assumptions": _strs,
-            "capabilities": _strs,
+            "facilities": _strs,
             "roles": _strs,
         },
     )(data, where)
@@ -224,7 +224,7 @@ class Assurance:
     provenance: Provenance
     library: _t.Optional[Library]
     specifications: _t.Tuple[Specification, ...]
-    capabilities: _t.Tuple[Capability, ...]
+    facilities: _t.Tuple[Facility, ...]
     assumptions: _t.Tuple[Assumption, ...]
     claims: _t.Tuple[Claim, ...]
     roles: _t.Tuple[Role, ...]
@@ -251,7 +251,7 @@ class Assurance:
             provenance=Provenance._read(data["provenance"], "provenance"),
             library=_opt(Library, data["library"], "library"),
             specifications=many(Specification._read, "specifications"),
-            capabilities=many(Capability._read, "capabilities"),
+            facilities=many(Facility._read, "facilities"),
             assumptions=many(Assumption._read, "assumptions"),
             claims=many(Claim._read, "claims"),
             roles=many(Role._read, "roles"),

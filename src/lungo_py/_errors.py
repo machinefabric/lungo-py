@@ -29,14 +29,14 @@ class HostError(Exception):
     """A host function failed where Lean cannot observe the failure."""
 
 
-class MissingCapabilityError(Exception):
-    """A call before the host installed a capability the program needs; `operation` is one of
+class MissingFacilityError(Exception):
+    """A call before the host installed a facility the program needs; `operation` is one of
     its operations."""
 
-    def __init__(self, capability, operation):
+    def __init__(self, facility, operation):
         super().__init__(
-            f"the host does not provide the capability {capability} (its operation {operation}): "
+            f"the host does not provide the facility {facility} (its operation {operation}): "
             "install it before calling the program"
         )
-        self.capability = capability
+        self.facility = facility
         self.operation = operation
