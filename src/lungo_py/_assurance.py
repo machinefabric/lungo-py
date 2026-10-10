@@ -56,6 +56,7 @@ class Specification:
     name: str
     kind: str
     statement: str
+    definition: _t.Optional[str]
     package: _t.Optional[str]
     fingerprint: str
     source: _t.Optional[Source]
@@ -86,6 +87,7 @@ class Assumption:
     name: str
     facility: str
     statement: str
+    definition: _t.Optional[str]
     package: _t.Optional[str]
     fingerprint: str
     source: _t.Optional[Source]
