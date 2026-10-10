@@ -66,10 +66,17 @@ lib.lungo_closure_call.argtypes = [
 ]
 lib.lungo_closure_call.restype = ctypes.c_int32
 
-lib.lungo_abi_v1.argtypes = []
-lib.lungo_abi_v1.restype = ctypes.c_uint32
+lib.lungo_async_resume.argtypes = [ctypes.c_uint64, ctypes.c_char_p, ctypes.c_size_t, ctypes.POINTER(Buffer)]
+lib.lungo_async_resume.restype = ctypes.c_int32
+lib.lungo_async_cancel.argtypes = [ctypes.c_uint64]
+lib.lungo_async_cancel.restype = ctypes.c_int32
+lib.lungo_async_outstanding.argtypes = []
+lib.lungo_async_outstanding.restype = ctypes.c_size_t
 
-ABI_VERSION = lib.lungo_abi_v1()
+lib.lungo_abi_v2.argtypes = []
+lib.lungo_abi_v2.restype = ctypes.c_uint32
+
+ABI_VERSION = lib.lungo_abi_v2()
 
 
 def take(buf):

@@ -27,3 +27,16 @@ class MalformedError(ValueError):
 
 class HostError(Exception):
     """A host function failed where Lean cannot observe the failure."""
+
+
+class MissingCapabilityError(Exception):
+    """A call before the host installed a capability the program needs; `operation` is one of
+    its operations."""
+
+    def __init__(self, capability, operation):
+        super().__init__(
+            f"the host does not provide the capability {capability} (its operation {operation}): "
+            "install it before calling the program"
+        )
+        self.capability = capability
+        self.operation = operation

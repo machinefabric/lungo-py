@@ -10,8 +10,9 @@ take a `Type` for each type parameter of a polymorphic function. Errors: `LeanIO
 import os
 
 from . import _runtime
-from ._errors import HostError, LeanError, LeanIOError, MalformedError
-from ._program import Program, eio, io, value
+from ._assurance import Assurance
+from ._errors import HostError, LeanError, LeanIOError, MalformedError, MissingCapabilityError
+from ._program import Program, async_, eio, io, outstanding, value
 from ._types import (
     BOOL,
     BYTE_ARRAY,
@@ -66,6 +67,10 @@ def cmake_dir() -> str:
 
 __all__ = [
     "ABI_VERSION",
+    "Assurance",
+    "MissingCapabilityError",
+    "async_",
+    "outstanding",
     "BOOL",
     "BYTE_ARRAY",
     "CHAR",

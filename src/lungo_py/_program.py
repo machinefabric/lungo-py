@@ -1,6 +1,7 @@
 """Generated programs: calls into Lean, and the host functions Lean calls."""
 
 import ctypes
+import inspect
 import threading
 
 from . import _runtime
@@ -111,7 +112,8 @@ _lib.lungo_set_host(_DISPATCH, _RETAIN, _RELEASE)
 
 
 class Returns:
-    """What a function returns: a value, an `IO` result, or an `EIO ε` result."""
+    """What a function returns: a value, an `IO` result, an `EIO ε` result, or an async program
+    (`error` is then the type of its operations)."""
 
     __slots__ = ("kind", "value", "error")
 
@@ -129,6 +131,22 @@ def io(t):
 
 def eio(e, t):
     return Returns("eio", t, e)
+
+
+def async_(op, t):
+    """An async program over the operations `op`, ending with a value of `t`."""
+    return Returns("async", t, op)
+
+
+def outstanding():
+    """The number of async programs waiting for an answer: zero once every async call has
+    returned."""
+    return _lib.lungo_async_outstanding()
+
+
+def _cancel(resumption):
+    if _lib.lungo_async_cancel(resumption) != 0:
+        raise HostError(f"resumption {resumption} was resumed or cancelled already")
 
 
 class Program:
@@ -152,6 +170,10 @@ class Program:
     def invoke(self, symbol, type_args, args, returns):
         """Calls the entry point `symbol` with the type arguments `type_args` and the arguments
         `args` (pairs of type and value); the result per `returns`."""
+        return self._result(self._call(symbol, type_args, args), returns)
+
+    def _call(self, symbol, type_args, args):
+        """The output of the entry point `symbol` called with `type_args` and `args`."""
         w = Writer(self)
         try:
             w.u32(len(type_args))
@@ -170,7 +192,44 @@ class Program:
             raise MalformedError(out.decode("utf-8", "replace"))
         if status != 0:
             raise HostError(f"a generated entry point returned status {status}")
-        return self._result(out, returns)
+        return out
+
+    async def drive_async(self, symbol, type_args, args, returns, perform):
+        """Calls the entry point `symbol` of an async program and runs it to its end: for each
+        operation it asks, `perform(op)` gives the answer's type and the handler's answer (or an
+        awaitable of it), and the program resumes with the answer. An exception of the handler,
+        or the task being cancelled, abandons the program: the runtime releases it, and the
+        exception propagates."""
+        out = self._call(symbol, type_args, args)
+        while True:
+            r = Reader(self, out)
+            kind = r.u8()
+            if kind == 0:
+                v = returns.value.decode(r)
+                r.finish()
+                return v
+            if kind != 1:
+                raise HostError(f"the runtime produced a step of kind {kind}")
+            op = returns.error.decode(r)
+            resumption = r.u64()
+            r.finish()
+            resumed = False
+            try:
+                answer_type, answer = perform(op)
+                if inspect.isawaitable(answer):
+                    answer = await answer
+                w = Writer(self, result=True)
+                answer_type.encode(w, answer)
+                data = bytes(w.buf)
+                buf = _runtime.Buffer()
+                status = _lib.lungo_async_resume(resumption, data, len(data), ctypes.byref(buf))
+                resumed = True
+                out = _runtime.take(buf)
+            finally:
+                if not resumed:
+                    _cancel(resumption)
+            if status != 0:
+                raise HostError(f"resuming an async program returned status {status}: {out.decode('utf-8', 'replace')}")
 
     def _result(self, out, returns):
         r = Reader(self, out)
