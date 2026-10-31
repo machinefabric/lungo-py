@@ -73,10 +73,10 @@ lib.lungo_async_cancel.restype = ctypes.c_int32
 lib.lungo_async_outstanding.argtypes = []
 lib.lungo_async_outstanding.restype = ctypes.c_size_t
 
-lib.lungo_abi_v2.argtypes = []
-lib.lungo_abi_v2.restype = ctypes.c_uint32
+lib.lungo_abi_v3.argtypes = []
+lib.lungo_abi_v3.restype = ctypes.c_uint32
 
-ABI_VERSION = lib.lungo_abi_v2()
+ABI_VERSION = lib.lungo_abi_v3()
 
 
 def take(buf):
